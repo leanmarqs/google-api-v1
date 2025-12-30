@@ -10,6 +10,7 @@ import {
   Radio,
   FormLabel,
   FormControl,
+  MenuItem,
 } from '@mui/material'
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -29,6 +30,7 @@ function Form() {
     handleSubmit,
     control,
     setValue,
+    reset,
     formState: { errors, isSubmitting, dirtyFields },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -41,16 +43,43 @@ function Form() {
       detalheOutro: '',
       inicio: null,
       termino: null,
+      predio: '',
+      sala: '',
     },
   })
 
   const tipoSelecionado = useWatch({ control, name: 'tipo' })
+  const predioSelecionado = useWatch({ control, name: 'predio' })
+  const predioValue = useWatch({ control, name: 'predio' })
+  const salaValue = useWatch({ control, name: 'sala' })
+
   const inicioRef = useRef<ReturnType<typeof dayjs> | null>(null)
 
   useEffect(() => {
     if (tipoSelecionado !== 'Evento') setValue('nomeEvento', '')
     if (tipoSelecionado !== 'Outro') setValue('detalheOutro', '')
   }, [tipoSelecionado, setValue])
+
+  useEffect(() => {
+    setValue('sala', '')
+  }, [predioSelecionado, setValue])
+
+  const handleReset = () => {
+    reset()
+  }
+
+  const salas =
+    predioSelecionado === 'Central de Aulas 1'
+      ? Array.from(
+          { length: 10 },
+          (_, i) => `Sala ${String(i + 1).padStart(2, '0')}`,
+        )
+      : predioSelecionado === 'Central de Aulas 2'
+        ? Array.from(
+            { length: 15 },
+            (_, i) => `Sala ${String(i + 1).padStart(2, '0')}`,
+          )
+        : []
 
   const onSubmit = (data: FormData) => {
     console.log('Dados válidos:', data)
@@ -80,7 +109,6 @@ function Form() {
                 helperText={errors.nome?.message}
                 fullWidth
               />
-
               <TextField
                 label='Email'
                 {...register('email')}
@@ -95,7 +123,6 @@ function Form() {
                 helperText={errors.email?.message}
                 fullWidth
               />
-
               <FormControl error={!!errors.tipo}>
                 <FormLabel>Tipo</FormLabel>
                 <Controller
@@ -127,7 +154,6 @@ function Form() {
                   )}
                 />
               </FormControl>
-
               {tipoSelecionado === 'Evento' && (
                 <TextField
                   label='Nome do Evento'
@@ -144,7 +170,6 @@ function Form() {
                   fullWidth
                 />
               )}
-
               {tipoSelecionado === 'Outro' && (
                 <TextField
                   label='Detalhar tipo de reserva'
@@ -161,7 +186,6 @@ function Form() {
                   fullWidth
                 />
               )}
-
               <Stack direction='row' spacing={2}>
                 <Controller
                   name='inicio'
@@ -210,9 +234,67 @@ function Form() {
                 />
               </Stack>
 
-              <Button type='submit' variant='contained' disabled={isSubmitting}>
-                Enviar
-              </Button>
+              <Stack direction='row' spacing={2}>
+                <Controller
+                  name='predio'
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      select
+                      label='Prédio'
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      error={!!errors.predio}
+                      helperText={errors.predio?.message}
+                      fullWidth
+                    >
+                      <MenuItem value='Central de Aulas 1'>
+                        Central de Aulas 1
+                      </MenuItem>
+                      <MenuItem value='Central de Aulas 2'>
+                        Central de Aulas 2
+                      </MenuItem>
+                    </TextField>
+                  )}
+                />
+
+                <Controller
+                  name='sala'
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      select
+                      label='Sala'
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      error={!!errors.sala}
+                      helperText={errors.sala?.message}
+                      fullWidth
+                      disabled={!predioValue}
+                    >
+                      {salas.map((sala) => (
+                        <MenuItem key={sala} value={sala}>
+                          {sala}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              </Stack>
+
+              <Stack direction='row' spacing={2} justifyContent='flex-end'>
+                <Button variant='outlined' onClick={handleReset}>
+                  Limpar
+                </Button>
+
+                <Button
+                  type='submit'
+                  variant='contained'
+                  disabled={isSubmitting}
+                >
+                  Enviar
+                </Button>
+              </Stack>
             </Stack>
           </form>
         </Paper>

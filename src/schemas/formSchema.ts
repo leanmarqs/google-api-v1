@@ -3,11 +3,13 @@ import dayjs, { Dayjs } from 'dayjs'
 
 export const formSchema = z
   .object({
-    nome: z.string().min(1, 'Informe o nome'),
+    nome: z.string().min(4, 'Informe o nome'),
     email: z.string().email('Email inválido'),
     tipo: z.enum(['Aula', 'Reunião', 'Evento', 'Outro']),
     nomeEvento: z.string().optional(),
     detalheOutro: z.string().optional(),
+    predio: z.string().min(1, 'Selecione um prédio'),
+    sala: z.string().min(1, 'Selecione uma sala'),
 
     inicio: z.custom<Dayjs | null>(
       (v) => v === null || (dayjs.isDayjs(v) && v.isValid()),
