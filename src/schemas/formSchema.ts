@@ -46,3 +46,6 @@ export const formSchema = z
       })
     }
   })
+
+  // 👇 ESTE é o export que você estava tentando importar
+export type FormData = z.infer<typeof formSchema>
